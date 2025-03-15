@@ -22,14 +22,14 @@ jobs:
 
       - name: Install required Python modules
         run: |
-          cd ./AzureStorageQueueTriggerFunction
+          cd ./AzureFunctionDeploy  # Navigate to AzureFunctionDeploy directory
           python -m pip install --upgrade pip
           pip install --target="./.python_packages/lib/site-packages" -r requirements.txt
 
       - name: Zip the Azure Function Deploy folder
         run: |
-          cd AzureStorageQueueTriggerFunction
-          zip -r ../AzureStorageQueueTriggerFunction.zip ./*
+          cd AzureFunctionDeploy  # Navigate to AzureFunctionDeploy directory
+          zip -r ../AzureFunctionDeploy.zip ./*
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -46,4 +46,4 @@ jobs:
           az functionapp deployment source config-zip \
             --resource-group minalmandloi \
             --name my-minu-function \
-            --src AzureStorageQueueTriggerFunction.zip
+            --src AzureFunctionDeploy.zip

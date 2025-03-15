@@ -1,13 +1,15 @@
-name: Azure Function Deploy With CICD.
+name: Azure Function Deploy With CICD
 on:
   workflow_dispatch:
 
 permissions:
-      id-token: write
-      contents: read
+  id-token: write
+  contents: read
+
 jobs: 
   deploy-functions:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -18,25 +20,30 @@ jobs:
           python-version: "3.11"
           architecture: x64
 
-      - name: Install required python modules
+      - name: Install required Python modules
         run: |
-            cd ./AzureStorageQueueTriggerFunction
-            python -m pip install --upgrade pip
-            pip install --target="./.python_packages/lib/site-packages" -r requirements.txt 
+          cd ./AzureStorageQueueTriggerFunction
+          python -m pip install --upgrade pip
+          pip install --target="./.python_packages/lib/site-packages" -r requirements.txt
 
       - name: Zip the Azure Function Deploy folder
         run: |
           cd AzureStorageQueueTriggerFunction
           zip -r ../AzureStorageQueueTriggerFunction.zip ./*
 
-      - name: 'Az CLI login'
+      - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  
-      - name: 'Run az commands'
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run az commands
         run: |
           az account show
           az group list
+
+      - name: Deploy Azure Function App
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group minalmandloi \
+            --name my-minu-function \
+            --src AzureStorageQueueTriggerFunction.zip

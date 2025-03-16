@@ -1,4 +1,5 @@
 name: Azure Function Deploy With CICD
+
 on:
   workflow_dispatch:
 
@@ -11,39 +12,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # Updated to latest version
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set Up Python
+        uses: actions/setup-python@v4  # Updated to latest version
         with:
           python-version: "3.11"
           architecture: x64
 
-      - name: Install required Python modules
+      - name: Install Required Dependencies for AzureFunctionDeploy
         run: |
           cd ./AzureFunctionDeploy  # Navigate to AzureFunctionDeploy directory
           python -m pip install --upgrade pip
           pip install --target="./.python_packages/lib/site-packages" -r requirements.txt
 
-      - name: Zip the Azure Function Deploy folder
+      - name: Install Required Dependencies for function1
+        run: |
+          cd MultiTriggerTypeFunctionsDeploy/function1  # Navigate to function1 directory
+          python -m pip install --upgrade pip
+          pip install --target="./.python_packages/lib/site-packages" -r requirements.txt
+
+      - name: Zip AzureFunctionDeploy Directory
         run: |
           cd AzureFunctionDeploy  # Navigate to AzureFunctionDeploy directory
           zip -r ../AzureFunctionDeploy.zip ./*
+
+      - name: Zip function1 Directory
+        run: |
+          cd MultiTriggerTypeFunctionsDeploy/function1  # Navigate to function1 directory
+          zip -r ../../function1.zip ./*
 
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Run az commands
+      - name: Verify Azure Subscription Access
         run: |
           az account show
           az group list
 
-      - name: Deploy Azure Function App
+      - name: Deploy AzureFunctionDeploy
         run: |
           az functionapp deployment source config-zip \
             --resource-group minalmandloi \
             --name my-minu-function \
             --src AzureFunctionDeploy.zip
+
+      - name: Deploy function1
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group minalmandloi \
+            --name my-minu-function \
+            --src function1.zip

@@ -2,7 +2,7 @@ import azure.functions as func
 import logging
 
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ADMIN)
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)  # Change from ADMIN to FUNCTION
 
 @app.route(route="pythonfunction")
 def pythonfunction(req: func.HttpRequest) -> func.HttpResponse:
